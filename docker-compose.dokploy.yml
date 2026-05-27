@@ -1,16 +1,21 @@
-services:
-  openwa:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    expose:
-      - "2785"
-    ports:
-      - "2785:2785"
-    command: >
+volumes:
+      - openwa-data:/app/data
+Y además repetiste healthcheck, dashboard y volumes.
+Borra TODO y deja solo esto:
+Switch agent/agents      
+Compact session/compact     services:
+Connect provider/connect       openwa:
+Copy session transcript/copy            build:
+Open editor/editor            context: .
+Exit the app/exit              dockerfile: Dockerfile
+Export session transcript/export          restart: unless-stopped
+Fork session/fork            expose:
+Help/help              - "2785"
+guided AGENTS.md setup/init            ports:
+Toggle MCPs/mcps              - "2785:2785"
+Switch model/models          command: >
       sh -c 'npx @open-wa/wa-automate@4.76.0
-      --port 2785
+      --port 2785Build·GPT-5.5
       --api-key "$API_MASTER_KEY"
       --webhook "https://citaapp.es/webhooks/openwa"
       --session-id fisiodemo
@@ -20,43 +25,11 @@ services:
       NODE_ENV: production
       PORT: 2785
       LOG_LEVEL: info
-      DATABASE_TYPE: sqlite
-      DATABASE_NAME: /app/data/openwa.sqlite
-      DATABASE_SYNCHRONIZE: "true"
-      DATABASE_LOGGING: "false"
-      ENGINE_TYPE: whatsapp-web.js
-      SESSION_DATA_PATH: /app/data/sessions
-      PUPPETEER_HEADLESS: "true"
-      PUPPETEER_ARGS: "--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--disable-gpu"
-      STORAGE_TYPE: local
-      STORAGE_LOCAL_PATH: /app/data/media
-      REDIS_ENABLED: "false"
-      QUEUE_ENABLED: "false"
-      CACHE_ENABLED: "false"
-      WEBHOOK_TIMEOUT: 10000
-      WEBHOOK_MAX_RETRIES: 3
-      WEBHOOK_RETRY_DELAY: 5000
-      RATE_LIMIT_TTL: 60
-      RATE_LIMIT_MAX: 100
-      PLUGINS_ENABLED: "true"
-      PLUGINS_DIR: /app/data/plugins
       API_MASTER_KEY: ${API_MASTER_KEY}
       ENABLE_SWAGGER: "true"
     volumes:
       - openwa-data:/app/data
     shm_size: "1gb"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "require('http').get('http://localhost:2785/api-docs/', (r) => process.exit(r.statusCode >= 200 && r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
   dashboard:
     build:
       context: ./dashboard
@@ -65,34 +38,6 @@ services:
     expose:
       - "80"
     depends_on:
-      openwa:
-        condition: service_healthy
-volumes:
-      - openwa-data:/app/data
-
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "require('http').get('http://localhost:2785/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
-  dashboard:
-    build:
-      context: ./dashboard
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    expose:
-      - "80"
-    depends_on:
-      openwa:
-        condition: service_healthy
-
+      - openwa
 volumes:
   openwa-data:
